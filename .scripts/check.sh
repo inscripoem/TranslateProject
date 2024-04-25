@@ -5,7 +5,7 @@ get_diff_article_files() {
   FILES=$(cat $DIFF_JSON | yq e '.files[].path' - )
   ARTICLES=''
   for FILE in $FILES; do
-    if [[ $FILE == sources/*.md ]]; then
+    if [[ "$FILE" == sources/*.md ]]; then
       ARTICLES="$ARTICLES $FILE"
     fi
   done
@@ -15,7 +15,7 @@ get_diff_article_files() {
 check_proofread() {
   PROOFREAD_ARTICLE=$1
   PROOFREAD_DATE=$(yq -f extract '.proofread_date' $PROOFREAD_ARTICLE)
-  if [ -z "$PROOFREAD_DATE" ]; then
+  if [ "$PROOFREAD_DATE" == "null" ]; then
     ERROR=$ERROR"Missing metadata in proofread_date; "
   fi
 }
@@ -23,11 +23,12 @@ check_proofread() {
 check_proofreading() {
   PROOFREADING_ARTICLE=$1
   PROOFREADER=$(yq -f extract '.proofreader' $PROOFREADING_ARTICLE)
-  if [ -z "$PROOFREADER" ]; then
+  if [ "$PROOFREADER" == "null" ]; then
     ERROR=$ERROR"Missing metadata in proofreader; "
   else
-    if [ $STATUS == "proofreading" ] || [ $STATUS == "proofread" ]; then
-      echo "waiting code for github id check of proofreader"
+    if [ "$STATUS" == "proofreading" ] || [ "$STATUS" == "proofread" ]; then
+      if [ "$PROOFREADER" != "$GITHUB_ID" ]; then
+        ERROR=$ERROR"Proofreader is not the same as the PR opener; "
     fi
   fi
 }
@@ -35,7 +36,7 @@ check_proofreading() {
 check_translated() {
   TRANSLATED_ARTICLE=$1
   TRANSLATED_DATE=$(yq -f extract '.translated_date' $TRANSLATED_ARTICLE)
-  if [ -z "$TRANSLATED_DATE" ]; then
+  if [ "$TRANSLATED_DATE" == "null" ]; then
     ERROR=$ERROR"Missing metadata in translated_date; "
   fi
 }
@@ -43,11 +44,12 @@ check_translated() {
 check_translating() {
   TRANSLATING_ARTICLE=$1
   TRANSLATOR=$(yq -f extract '.translator' $TRANSLATING_ARTICLE)
-  if [ -z "$TRANSLATOR" ]; then
+  if [ "$TRANSLATOR" == "null" ]; then
     ERROR=$ERROR"Missing metadata in translator; "
   else
-    if [ $STATUS == "translating" ] || [ $STATUS == "translated" ]; then
-      echo "waiting code for github id check of translator"
+    if [ "$STATUS" == "translating" ] || [ "$STATUS" == "translated" ]; then
+      if [ "$TRANSLATOR" != "$GITHUB_ID" ]; then
+        ERROR=$ERROR"Translator is not the same as the PR opener; "
     fi
   fi
 }
@@ -58,40 +60,39 @@ check_collected() {
   AUTHOR=$(yq -f extract '.author' $COLLECTED_ARTICLE)
   COLLECTOR=$(yq -f extract '.collector' $COLLECTED_ARTICLE)
   COLLECTED_DATE=$(yq -f extract '.collected_date' $COLLECTED_ARTICLE)
-  echo "TITLE: $TITLE, AUTHOR: $AUTHOR, COLLECTOR: $COLLECTOR, COLLECTED_DATE: $COLLECTED_DATE"
-  
-  if [ -z "$TITLE" ] || [ -z "$AUTHOR" ] || [ -z "$COLLECTOR" ] || [ -z "$COLLECTED_DATE" ]; then
+  if [ "$TITLE" == "null" ] || [ "$AUTHOR" == "null" ] || [ "$COLLECTOR" == "null" ] || [ "$COLLECTED_DATE" == "null" ]; then
     ERROR=$ERROR"Missing metadata in title/author/collector/collected_date; "
-    echo 1
   else
-    if [ $STATUS == "collected" ]; then
-      echo "waiting code for github id check of collector"
+    if [ "$STATUS" == "collected" ]; then
+      if [ "$COLLECTOR" != "$GITHUB_ID" ]; then
+        ERROR=$ERROR"Collector is not the same as the PR opener; "
     fi
   fi
 }
 
 get_diff_article_files
 for ARTICLE in $ARTICLES; do
-  echo "# Checking article: $ARTICLE"
+  echo "Checking article: $ARTICLE"
   ERROR=""
   STATUS=$(yq -f extract '.status' $ARTICLE)
+  GITHUB_ID=${{ github.actor }}
   case $STATUS in
-    published)
+    "published")
       # No specific check for published articles
       ;&
-    proofread)
+    "proofread")
       check_proofread $ARTICLE
       ;&
-    proofreading)
+    "proofreading")
       check_proofreading $ARTICLE
       ;&
-    translated)
+    "translated")
       check_translated $ARTICLE
       ;&
-    translating)
+    "translating")
       check_translating $ARTICLE
       ;&
-    collected)
+    "collected")
       check_collected $ARTICLE
       ;;
     *)
@@ -99,9 +100,9 @@ for ARTICLE in $ARTICLES; do
       ;;
   esac
   if [ -z "$ERROR" ]; then
-    echo "✨ All checks passed for $STATUS $ARTICLE"
+    echo "  ✨ All checks passed for $STATUS $ARTICLE"
   else
-    echo "😭 Some checks failed for $STATUS $ARTICLE: $ERROR"
+    echo "  😭 Some checks failed for $STATUS $ARTICLE: $ERROR"
   fi
 done
 
