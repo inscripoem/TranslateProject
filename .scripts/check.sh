@@ -108,6 +108,7 @@ for ARTICLE in $ARTICLES; do
     echo "  😭 Some checks failed for $STATUS $ARTICLE: $ERROR"
     CHECK_PASSED=0
   fi
+  echo $CHECK_PASSED
 done
 if [ $CHECK_PASSED -eq 0 ]; then
   echo "❌ Some checks failed. Please fix the article(s) before merging the PR."
