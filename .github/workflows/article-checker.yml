@@ -20,11 +20,9 @@ jobs:
         uses: GrantBirki/git-diff-action@v2.7.0
         with:
           json_diff_file_output: diff.json
-          raw_diff_file_output: diff.txt
-          file_output_only: "true"
+          file_output_only: true
       - name: Run Checks
         env: 
           DIFF_JSON: ${{ steps.git-diff-action.outputs.json-diff-path }}
-          DIFF_RAW: ${{ steps.git-diff-action.outputs.raw-diff-path }}
         run: |
-          ./.scripts/test.sh
+          /bin/bash ./.scripts/check.sh
