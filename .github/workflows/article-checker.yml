@@ -24,5 +24,6 @@ jobs:
       - name: Run Checks
         env: 
           DIFF_JSON: ${{ steps.git-diff-action.outputs.json-diff-path }}
+          ACTOR_ID: ${{ github.actor }}
         run: |
           /bin/bash ./.scripts/check.sh

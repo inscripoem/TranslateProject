@@ -27,7 +27,7 @@ check_proofreading() {
     ERROR=$ERROR"Missing metadata in proofreader; "
   else
     if [ "$STATUS" == "proofreading" ] || [ "$STATUS" == "proofread" ]; then
-      if [ "$PROOFREADER" != "$GITHUB_ID" ]; then
+      if [ "$PROOFREADER" != "$ACTOR_ID" ]; then
         ERROR=$ERROR"Proofreader is not the same as the PR opener; "
       fi
     fi
@@ -49,7 +49,7 @@ check_translating() {
     ERROR=$ERROR"Missing metadata in translator; "
   else
     if [ "$STATUS" == "translating" ] || [ "$STATUS" == "translated" ]; then
-      if [ "$TRANSLATOR" != "$GITHUB_ID" ]; then
+      if [ "$TRANSLATOR" != "$ACTOR_ID" ]; then
         ERROR=$ERROR"Translator is not the same as the PR opener; "
       fi
     fi
@@ -66,7 +66,7 @@ check_collected() {
     ERROR=$ERROR"Missing metadata in title/author/collector/collected_date; "
   else
     if [ "$STATUS" == "collected" ]; then
-      if [ "$COLLECTOR" != "$GITHUB_ID" ]; then
+      if [ "$COLLECTOR" != "$ACTOR_ID" ]; then
         ERROR=$ERROR"Collector is not the same as the PR opener; "
       fi
     fi
@@ -78,7 +78,6 @@ for ARTICLE in $ARTICLES; do
   echo "Checking article: $ARTICLE"
   ERROR=""
   STATUS=$(yq -f extract '.status' $ARTICLE)
-  GITHUB_ID=${{ github.actor }}
   case $STATUS in
     "published")
       # No specific check for published articles
