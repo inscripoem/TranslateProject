@@ -29,6 +29,7 @@ check_proofreading() {
     if [ "$STATUS" == "proofreading" ] || [ "$STATUS" == "proofread" ]; then
       if [ "$PROOFREADER" != "$GITHUB_ID" ]; then
         ERROR=$ERROR"Proofreader is not the same as the PR opener; "
+      fi
     fi
   fi
 }
@@ -50,6 +51,7 @@ check_translating() {
     if [ "$STATUS" == "translating" ] || [ "$STATUS" == "translated" ]; then
       if [ "$TRANSLATOR" != "$GITHUB_ID" ]; then
         ERROR=$ERROR"Translator is not the same as the PR opener; "
+      fi
     fi
   fi
 }
@@ -66,6 +68,7 @@ check_collected() {
     if [ "$STATUS" == "collected" ]; then
       if [ "$COLLECTOR" != "$GITHUB_ID" ]; then
         ERROR=$ERROR"Collector is not the same as the PR opener; "
+      fi
     fi
   fi
 }
