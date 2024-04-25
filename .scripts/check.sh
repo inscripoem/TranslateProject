@@ -78,6 +78,7 @@ for ARTICLE in $ARTICLES; do
   echo "Checking article: $ARTICLE"
   ERROR=""
   STATUS=$(yq -f extract '.status' $ARTICLE)
+  CHECK_PASSED=true
   case $STATUS in
     "published")
       # No specific check for published articles
@@ -105,6 +106,13 @@ for ARTICLE in $ARTICLES; do
     echo "  ✨ All checks passed for $STATUS $ARTICLE"
   else
     echo "  😭 Some checks failed for $STATUS $ARTICLE: $ERROR"
+    CHECK_PASSED=false
   fi
 done
+if [ "$CHECK_PASSED" == false ]; then
+  echo "❌ Some checks failed. Please fix the article(s) before merging the PR."
+  exit 1
+else
+  echo "✅ All checks passed. You can merge the PR now."
+fi
 
